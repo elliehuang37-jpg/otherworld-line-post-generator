@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4B0717">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="歐樂沃 LINE 貼文">
+  <title>歐樂沃 LINE 社群貼文產出工作台</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --ink: #4B0717;
+      --muted: #715966;
+      --line: #ead4df;
+      --paper: #ffffff;
+      --soft: #fff6fa;
+      --burgundy: #4B0717;
+      --rose: #CC5F83;
+      --purple: #BD73BF;
+      --electric: #4142E8;
+      --sky: #78BBE8;
+      --sky-soft: #f1f9fe;
+      --ok: #25835e;
+      --warn: #ad5f16;
+      --shadow: 0 18px 42px rgba(75, 7, 23, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #fff;
+      font-family: "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.55;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px clamp(16px, 4vw, 42px);
+      color: #fff;
+      background: var(--burgundy);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(120, 187, 232, 0.32), rgba(204, 95, 131, 0.22));
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+      min-height: calc(100vh - 67px);
+    }
+
+    .control {
+      border-right: 1px solid var(--line);
+      background: #fff;
+      overflow: auto;
+    }
+
+    .hero {
+      padding: 30px 24px 28px;
+      border-bottom: 1px solid var(--line);
+      border-left: 7px solid var(--rose);
+      background: linear-gradient(135deg, #fff 0%, #fff 62%, #f1f9fe 100%);
+    }
+
+    .hero h2 {
+      margin: 0;
+      max-width: 360px;
+      font-size: 28px;
+      line-height: 1.14;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      max-width: 380px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .control-body {
+      padding: 18px;
+    }
+
+    .section {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:first-child { padding-top: 0; }
+    .section:last-child { border-bottom: 0; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin: 0 0 12px;
+    }
+
+    .field label {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--rose);
+      box-shadow: 0 0 0 3px rgba(204, 95, 131, 0.18);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--sky-soft);
+    }
+
+    .segmented button,
+    .chip-row button,
+    .ghost-btn,
+    .mini-btn,
+    .primary-btn {
+      min-height: 40px;
+      border-radius: 8px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .segmented button,
+    .chip-row button {
+      border: 0;
+      color: var(--ink);
+      background: transparent;
+      padding: 9px 7px;
+    }
+
+    .segmented button.active,
+    .chip-row button.active {
+      color: #fff;
+      background: var(--burgundy);
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip-row button {
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .ghost-btn,
+    .mini-btn,
+    .primary-btn {
+      border: 1px solid transparent;
+      padding: 9px 12px;
+    }
+
+    .ghost-btn {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.42);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .mini-btn {
+      color: var(--ink);
+      border-color: var(--line);
+      background: #fff;
+    }
+
+    .primary-btn {
+      color: #fff;
+      background: linear-gradient(135deg, var(--electric), var(--purple));
+    }
+
+    .primary-btn:hover { filter: brightness(0.96); }
+
+    .workspace {
+      min-width: 0;
+      padding: clamp(18px, 3vw, 34px);
+      background: #fff;
+      overflow: auto;
+    }
+
+    .block {
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .block-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      box-shadow: inset 6px 0 0 var(--rose);
+    }
+
+    .block-head h2,
+    .block-head h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .block-head p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .block-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.92fr) minmax(320px, 1.08fr);
+      gap: 18px;
+      padding: 18px;
+      align-items: start;
+    }
+
+    .phone {
+      width: min(360px, 100%);
+      margin: 0 auto;
+      border: 10px solid #1d1233;
+      border-radius: 30px;
+      background: #f5f5f7;
+      box-shadow: 0 24px 52px rgba(75, 7, 23, 0.16);
+      overflow: hidden;
+    }
+
+    .phone-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      height: 52px;
+      padding: 0 16px;
+      color: #fff;
+      background: #06c755;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .phone-body {
+      min-height: 520px;
+      padding: 14px;
+      background: #edf3f8;
+    }
+
+    .line-bubble {
+      width: fit-content;
+      max-width: 88%;
+      padding: 12px 13px;
+      border-radius: 4px 18px 18px 18px;
+      color: #1f2933;
+      background: #fff;
+      white-space: pre-wrap;
+      font-size: 15px;
+      line-height: 1.58;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .preview-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      min-height: 88px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .metric::before {
+      content: "";
+      display: block;
+      width: 38px;
+      height: 4px;
+      margin-bottom: 9px;
+      border-radius: 999px;
+      background: var(--burgundy);
+    }
+
+    .metric:nth-child(2)::before { background: var(--rose); }
+    .metric:nth-child(3)::before { background: var(--electric); }
+
+    .metric b {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .warning-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .warning {
+      border-left: 4px solid var(--rose);
+      border-radius: 6px;
+      padding: 9px 10px;
+      color: var(--ink);
+      background: #fff2f7;
+      font-size: 13px;
+    }
+
+    .warning.ok {
+      border-left-color: var(--ok);
+      background: #f1f9fe;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .info-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .info-card h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .info-card p {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .info-card strong { color: var(--ink); }
+
+    .price-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .price-line:first-of-type { border-top: 0; }
+
+    .notice {
+      margin-top: 10px;
+      border-left: 4px solid var(--rose);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: var(--soft);
+      font-size: 13px;
+    }
+
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.8fr) minmax(300px, 1.2fr);
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .step-num {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--burgundy);
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .step b {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .canvas-wrap {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(300px, 1fr);
+      gap: 16px;
+      padding: 16px;
+      align-items: start;
+    }
+
+    canvas {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .history {
+      display: grid;
+      gap: 8px;
+      padding: 16px;
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    .history button {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .history b {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+
+    .history span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      z-index: 40;
+      transform: translateX(-50%) translateY(24px);
+      opacity: 0;
+      pointer-events: none;
+      transition: 180ms ease;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      background: rgba(75, 7, 23, 0.94);
+      font-weight: 800;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1120px) {
+      .shell { grid-template-columns: 1fr; }
+      .control {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .control-body {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 20px;
+      }
+      .section:last-child { border-bottom: 1px solid var(--line); }
+    }
+
+    @media (max-width: 900px) {
+      .preview-grid,
+      .content-grid,
+      .schedule-grid,
+      .canvas-wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .top-actions { justify-content: flex-start; }
+      .brand h1 { white-space: normal; }
+      .control-body,
+      .two-col,
+      .preview-meta {
+        grid-template-columns: 1fr;
+      }
+      .phone-body { min-height: 420px; }
+      .block-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .block-actions { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">OL</div>
+      <div>
+        <h1>歐樂沃 LINE 社群貼文產出工作台</h1>
+        <p>文案生成、手機預覽、AI 成本、排程與圖卡一次整理</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="ghost-btn" id="installBtn" hidden>安裝 App</button>
+      <button class="ghost-btn" id="resetBtn">重設</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <aside class="control">
+      <section class="hero">
+        <h2>每天 3 分鐘，產出可直接貼上的 LINE 社群文案</h2>
+        <p>輸入產品關鍵字、選擇語氣與目標，右側會即時同步成 LINE 手機泡泡預覽。</p>
+      </section>
+
+      <form class="control-body" id="postForm">
+        <section class="section">
+          <p class="section-title">貼文生成與預覽</p>
+          <div class="field">
+            <label for="productKeyword">產品關鍵字</label>
+            <input id="productKeyword" placeholder="例：夢幻城堡門票、親子 DIY、生日派對" value="夢幻城堡門票">
+          </div>
+          <div class="field">
+            <label for="productBenefit">主打亮點</label>
+            <textarea id="productBenefit" placeholder="例：室內親子景點、拍照好看、雨天也能玩">室內親子景點、拍照好看、雨天也能玩，適合親子家庭週末安排。</textarea>
+          </div>
+          <div class="field">
+            <label>文案風格</label>
+            <div class="segmented" id="styleGroup" role="tablist" aria-label="文案風格">
+              <button type="button" data-style="humor" class="active">幽默</button>
+              <button type="button" data-style="pro">專業</button>
+              <button type="button" data-style="promo">促銷</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="postGoal">貼文目標</label>
+            <select id="postGoal">
+              <option value="comment">提高留言互動</option>
+              <option value="booking">導向預約/報名</option>
+              <option value="share">鼓勵轉分享</option>
+              <option value="trust">建立信任感</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="section">
+          <p class="section-title">發布設定</p>
+          <div class="two-col">
+            <div class="field">
+              <label for="postDate">發布日期</label>
+              <input type="date" id="postDate">
+            </div>
+            <div class="field">
+              <label for="postTime">發布時間</label>
+              <select id="postTime">
+                <option value="10:00">10:00 早上</option>
+                <option value="12:00">12:00 中午</option>
+                <option value="18:00">18:00 傍晚</option>
+                <option value="21:30">21:30 晚間</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="audience">主要受眾</label>
+            <select id="audience">
+              <option value="family">親子家庭</option>
+              <option value="couple">情侶約會</option>
+              <option value="school">學校/安親班</option>
+              <option value="company">企業家庭日</option>
+              <option value="member">LINE 舊會員</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cta">行動呼籲</label>
+            <input id="cta" value="留言「城堡」索取本月活動清單">
+          </div>
+        </section>
+
+        <section class="section">
+          <p class="section-title">AI 智慧文案大腦</p>
+          <div class="two-col">
+            <div class="field">
+              <label for="aiProvider">API 供應商</label>
+              <select id="aiProvider">
+                <option value="openai">ChatGPT / OpenAI</option>
+                <option value="claude">Claude API</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="dailyPosts">每日篇數</label>
+              <input type="number" min="1" max="200" id="dailyPosts" value="10">
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label for="inputCost">輸入單價 / 100 萬 tokens</label>
+              <input type="number" step="0.01" min="0" id="inputCost" value="0.50">
+            </div>
+            <div class="field">
+              <label for="outputCost">輸出單價 / 100 萬 tokens</label>
+              <input type="number" step="0.01" min="0" id="outputCost" value="1.50">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <p class="section-title">自動發文排程</p>
+          <div class="field">
+            <label for="lineTarget">LINE 發布目標</label>
+            <select id="lineTarget">
+              <option value="oa">LINE 官方帳號</option>
+              <option value="community">LINE 社群 / Open Community</option>
+              <option value="group">私人 LINE 群組</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="scheduleMode">排程模式</label>
+            <select id="scheduleMode">
+              <option value="manual">先產文，人工複製發布</option>
+              <option value="backend">後端排程 + 官方 API</option>
+              <option value="plugin">第三方外掛 / 自動化工具</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="section">
+          <p class="section-title">圖片 / 圖卡自動生成</p>
+          <div class="two-col">
+            <div class="field">
+              <label for="cardTemplate">圖卡版型</label>
+              <select id="cardTemplate">
+                <option value="clean">清爽白底</option>
+                <option value="promo">促銷重點</option>
+                <option value="story">故事氛圍</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="cardAccent">圖卡強調色</label>
+              <select id="cardAccent">
+                <option value="#CC5F83">Rose</option>
+                <option value="#4B0717">Burgundy</option>
+                <option value="#BD73BF">Purple</option>
+                <option value="#4142E8">Electric</option>
+                <option value="#78BBE8">Sky</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="primary-btn" style="width:100%;">生成今日貼文</button>
+        </section>
+      </form>
+    </aside>
+
+    <section class="workspace">
+      <article class="block" id="blockPreview">
+        <div class="block-head">
+          <div>
+            <h2>1. 貼文生成與 LINE 手機預覽</h2>
+            <p>即時同步排版、自動 Emoji、敏感詞替換與一鍵複製</p>
+          </div>
+          <div class="block-actions">
+            <button class="mini-btn" id="copyBtn">複製文字</button>
+            <button class="mini-btn" id="saveBtn">存入紀錄</button>
+            <button class="mini-btn" id="downloadTextBtn">下載 TXT</button>
+          </div>
+        </div>
+        <div class="preview-grid">
+          <div>
+            <div class="phone" aria-label="LINE 手機預覽">
+              <div class="phone-top">
+                <span>歐樂沃夢幻城堡</span>
+                <span id="phoneTime">12:00</span>
+              </div>
+              <div class="phone-body">
+                <div class="line-bubble" id="linePreview"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="preview-meta">
+              <div class="metric">
+                <b id="charCount">0</b>
+                <span>字數</span>
+              </div>
+              <div class="metric">
+                <b id="emojiCount">0</b>
+                <span>Emoji</span>
+              </div>
+              <div class="metric">
+                <b id="riskCount">0</b>
+                <span>敏感詞處理</span>
+              </div>
+            </div>
+            <div class="warning-list" id="filterList"></div>
+            <div class="notice" id="postStrategy"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="block" id="blockAi">
+        <div class="block-head">
+          <div>
+            <h2>2. AI 智慧文案大腦</h2>
+            <p>預留 OpenAI / Claude API 串接架構與每月成本估算</p>
+          </div>
+        </div>
+        <div class="content-grid">
+          <div class="info-card">
+            <h4>API 串接架構</h4>
+            <p><strong>前端頁面</strong> 只送出需求與參數，API Key 應放在後端函式或伺服器。</p>
+            <div class="price-line"><span>Frontend</span><strong>GitHub Pages</strong></div>
+            <div class="price-line"><span>Backend</span><strong>Vercel / Cloudflare</strong></div>
+            <div class="price-line"><span>Model</span><strong id="providerLabel">OpenAI</strong></div>
+          </div>
+          <div class="info-card">
+            <h4>Token 成本估算</h4>
+            <p>以下為可調參數試算，正式報價需依實際模型單價與用量更新。</p>
+            <div class="price-line"><span>每日文案</span><strong id="dailyPostLabel">10 篇</strong></div>
+            <div class="price-line"><span>月用量估算</span><strong id="monthlyTokens">0 tokens</strong></div>
+            <div class="price-line"><span>AI 月成本</span><strong id="monthlyCost">US$0.00</strong></div>
+          </div>
+          <div class="info-card">
+            <h4>後端開發範圍</h4>
+            <p>若要真的串接 AI，建議加上品牌語氣 prompt、敏感詞規則、用量紀錄與錯誤重試。</p>
+            <div class="notice">此靜態版已完成前端互動與規格區，下一階段可接 API 代理後端。</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="block" id="blockSchedule">
+        <div class="block-head">
+          <div>
+            <h2>3. 自動發文排程</h2>
+            <p>依 LINE 發布對象判斷 API 可行性與開發成本</p>
+          </div>
+        </div>
+        <div class="schedule-grid">
+          <div class="info-card">
+            <h4 id="lineTargetTitle">LINE 官方帳號</h4>
+            <p id="lineTargetDesc"></p>
+            <div class="price-line"><span>技術難度</span><strong id="lineDifficulty"></strong></div>
+            <div class="price-line"><span>建議方案</span><strong id="lineRecommendation"></strong></div>
+            <div class="price-line"><span>費用影響</span><strong id="lineCostImpact"></strong></div>
+          </div>
+          <div class="timeline">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div><b>確認發布載體</b><span>先確認是官方帳號、社群或私人群組，三者 API 能力不同。</span></div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div><b>建立後端排程</b><span>使用資料庫保存貼文、時間、狀態與發送結果。</span></div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div><b>串接 LINE API</b><span>官方帳號可走官方能力；社群或群組需另評估外掛、自動化或人工發布流程。</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="block" id="blockCard">
+        <div class="block-head">
+          <div>
+            <h2>4. 圖片 / 圖卡自動生成</h2>
+            <p>前端圖卡預覽可直接下載，未來可加接 Canva API 或 AI 繪圖</p>
+          </div>
+          <div class="block-actions">
+            <button class="mini-btn" id="downloadCardBtn">下載 PNG</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="cardCanvas" width="1080" height="1080" aria-label="圖卡預覽"></canvas>
+          <div class="info-card">
+            <h4>加選功能費用影響</h4>
+            <p>若只是把文字套入固定版型，可用前端 Canvas 或後端圖片服務；若要 AI 圖像、品牌素材庫與多尺寸輸出，成本會明顯增加。</p>
+            <div class="price-line"><span>固定圖卡版型</span><strong>低至中</strong></div>
+            <div class="price-line"><span>Canva API 串接</span><strong>中</strong></div>
+            <div class="price-line"><span>DALL-E / Midjourney</span><strong>中至高</strong></div>
+            <div class="notice">目前此版已可依貼文內容產生 1:1 PNG 圖卡，適合 LINE 圖文貼文使用。</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="block">
+        <div class="block-head">
+          <div>
+            <h3>產出紀錄</h3>
+            <p>保留最近 20 筆，方便回看與重複使用</p>
+          </div>
+          <button class="mini-btn" id="clearHistoryBtn">清除紀錄</button>
+        </div>
+        <div class="history" id="historyList"></div>
+      </article>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    const state = {
+      style: "humor",
+      currentPost: "",
+      filteredWords: []
+    };
+
+    const styleData = {
+      humor: {
+        label: "幽默",
+        emojis: ["🏰", "😆", "✨", "📸"],
+        opener: "爸媽的週末救星來了",
+        voice: "輕鬆、有畫面、讓人想留言",
+        ctaPrefix: "想省下排行程的腦力"
+      },
+      pro: {
+        label: "專業",
+        emojis: ["🏰", "📌", "✅", "👨‍👩‍👧"],
+        opener: "本週親子出遊可以這樣安排",
+        voice: "清楚、可信、強調利益點",
+        ctaPrefix: "想收到完整活動資訊"
+      },
+      promo: {
+        label: "促銷",
+        emojis: ["🏰", "🔥", "🎁", "⏰"],
+        opener: "本週活動名額整理好了",
+        voice: "明確、行動導向、帶出限時感",
+        ctaPrefix: "想先卡位或索取優惠"
+      }
+    };
+
+    const audienceData = {
+      family: {
+        label: "親子家庭",
+        pain: "不用擔心天氣，也不用臨時找行程",
+        line: "讓孩子放電，爸媽也能拍到漂亮照片"
+      },
+      couple: {
+        label: "情侶約會",
+        pain: "不想只是吃飯看電影，可以安排更有記憶點的約會",
+        line: "城堡場景很好拍，也很適合一起留下紀念"
+      },
+      school: {
+        label: "學校/安親班",
+        pain: "團體活動需要安全、好管理、又能讓孩子投入",
+        line: "可依年齡與人數規劃活動節奏"
+      },
+      company: {
+        label: "企業家庭日",
+        pain: "公司活動需要兼顧親子、拍照、流程與場地體驗",
+        line: "適合規劃家庭日、員工親子活動或節慶包場"
+      },
+      member: {
+        label: "LINE 舊會員",
+        pain: "熟客需要新的理由再次回訪",
+        line: "把本月亮點整理給你，安排回訪更輕鬆"
+      }
+    };
+
+    const goalData = {
+      comment: "留言互動",
+      booking: "預約報名",
+      share: "轉分享",
+      trust: "信任建立"
+    };
+
+    const sensitiveRules = [
+      { word: "保證", replacement: "有機會" },
+      { word: "最便宜", replacement: "划算" },
+      { word: "唯一", replacement: "很適合" },
+      { word: "療效", replacement: "體驗感受" },
+      { word: "治療", replacement: "舒緩體驗" },
+      { word: "免費", replacement: "限量招待" },
+      { word: "立即致富", replacement: "逐步累積成果" }
+    ];
+
+    function init() {
+      $("#postDate").value = toDateInput(new Date());
+      bindEvents();
+      renderAll();
+      renderHistory();
+      registerServiceWorker();
+    }
+
+    function bindEvents() {
+      $("#postForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        renderAll(true);
+      });
+
+      $("#styleGroup").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-style]");
+        if (!button) return;
+        state.style = button.dataset.style;
+        $$("#styleGroup button").forEach((item) => item.classList.toggle("active", item === button));
+        renderAll();
+      });
+
+      [
+        "productKeyword", "productBenefit", "postGoal", "postDate", "postTime", "audience", "cta",
+        "aiProvider", "dailyPosts", "inputCost", "outputCost", "lineTarget", "scheduleMode",
+        "cardTemplate", "cardAccent"
+      ].forEach((id) => {
+        $("#" + id).addEventListener("input", () => renderAll());
+        $("#" + id).addEventListener("change", () => renderAll());
+      });
+
+      $("#copyBtn").addEventListener("click", copyPost);
+      $("#saveBtn").addEventListener("click", savePost);
+      $("#downloadTextBtn").addEventListener("click", downloadText);
+      $("#downloadCardBtn").addEventListener("click", downloadCard);
+      $("#clearHistoryBtn").addEventListener("click", clearHistory);
+      $("#resetBtn").addEventListener("click", resetForm);
+
+      let deferredPrompt = null;
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        deferredPrompt = event;
+        $("#installBtn").hidden = false;
+      });
+      $("#installBtn").addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        $("#installBtn").hidden = true;
+      });
+    }
+
+    function renderAll(fromButton = false) {
+      const rawPost = buildPost();
+      const result = filterSensitiveWords(rawPost);
+      state.currentPost = result.text;
+      state.filteredWords = result.filtered;
+
+      $("#linePreview").textContent = state.currentPost;
+      $("#phoneTime").textContent = $("#postTime").value;
+      renderMetrics();
+      renderFilterList();
+      renderStrategy();
+      renderAiCost();
+      renderSchedule();
+      renderCanvas();
+
+      if (fromButton) showToast("已生成今日貼文");
+    }
+
+    function buildPost() {
+      const style = styleData[state.style];
+      const audience = audienceData[$("#audience").value];
+      const goal = goalData[$("#postGoal").value];
+      const product = clean($("#productKeyword").value) || "夢幻城堡活動";
+      const benefit = clean($("#productBenefit").value) || "適合親子、拍照與週末出遊";
+      const cta = clean($("#cta").value) || "留言「城堡」索取活動資訊";
+      const dateLabel = formatDate($("#postDate").value);
+      const emojis = style.emojis;
+
+      const lines = [
+        `${emojis[0]} ${style.opener}！`,
+        "",
+        `如果你正在找「${product}」，這次可以先收藏起來。`,
+        `${audience.pain}，歐樂沃夢幻城堡幫你把重點整理好了。`,
+        "",
+        `${emojis[2]} 今日亮點`,
+        `1. ${benefit}`,
+        `2. ${audience.line}`,
+        `3. 適合目標：${audience.label}｜目的：${goal}`,
+        "",
+        `${emojis[1]} 小提醒：${dateLabel} ${$("#postTime").value} 前後最適合丟到 LINE 社群，記得搭配一張現場圖或活動圖卡。`,
+        "",
+        `${style.ctaPrefix}，${cta}。`,
+        "",
+        `${emojis[3]} #歐樂沃夢幻城堡 #親子景點 #LINE社群 #週末行程`
+      ];
+
+      return lines.join("\n");
+    }
+
+    function filterSensitiveWords(text) {
+      const filtered = [];
+      let output = text;
+      sensitiveRules.forEach((rule) => {
+        if (output.includes(rule.word)) {
+          filtered.push(rule);
+          output = output.split(rule.word).join(rule.replacement);
+        }
+      });
+      return { text: output, filtered };
+    }
+
+    function renderMetrics() {
+      const emojiMatches = state.currentPost.match(/[\u{1F300}-\u{1FAFF}]/gu) || [];
+      $("#charCount").textContent = state.currentPost.length;
+      $("#emojiCount").textContent = emojiMatches.length;
+      $("#riskCount").textContent = state.filteredWords.length;
+    }
+
+    function renderFilterList() {
+      const box = $("#filterList");
+      if (!state.filteredWords.length) {
+        box.innerHTML = `<div class="warning ok">敏感詞檢查通過，目前沒有需要替換的詞。</div>`;
+        return;
+      }
+      box.innerHTML = state.filteredWords
+        .map((item) => `<div class="warning">已將「${escapeHtml(item.word)}」替換為「${escapeHtml(item.replacement)}」。</div>`)
+        .join("");
+    }
+
+    function renderStrategy() {
+      const style = styleData[state.style];
+      const goal = goalData[$("#postGoal").value];
+      $("#postStrategy").innerHTML = `<strong>文案策略：</strong>${style.label}語氣，${style.voice}；本篇目標為「${goal}」。`;
+    }
+
+    function renderAiCost() {
+      const provider = $("#aiProvider").value === "openai" ? "OpenAI" : "Claude";
+      const dailyPosts = Number($("#dailyPosts").value || 0);
+      const inputCost = Number($("#inputCost").value || 0);
+      const outputCost = Number($("#outputCost").value || 0);
+      const inputTokensPerPost = 900;
+      const outputTokensPerPost = 550;
+      const monthlyInput = dailyPosts * 30 * inputTokensPerPost;
+      const monthlyOutput = dailyPosts * 30 * outputTokensPerPost;
+      const monthlyCost = (monthlyInput / 1000000) * inputCost + (monthlyOutput / 1000000) * outputCost;
+
+      $("#providerLabel").textContent = provider;
+      $("#dailyPostLabel").textContent = `${dailyPosts} 篇`;
+      $("#monthlyTokens").textContent = `${formatNumber(monthlyInput + monthlyOutput)} tokens`;
+      $("#monthlyCost").textContent = `US$${monthlyCost.toFixed(2)}`;
+    }
+
+    function renderSchedule() {
+      const target = $("#lineTarget").value;
+      const mode = $("#scheduleMode").value;
+      const data = {
+        oa: {
+          title: "LINE 官方帳號",
+          desc: "較適合走官方 API 與後端排程，能做正式的群發與訊息管理。",
+          difficulty: "中",
+          recommendation: mode === "manual" ? "可先人工發布" : "後端排程 + 官方 API",
+          cost: "中"
+        },
+        community: {
+          title: "LINE 社群 / Open Community",
+          desc: "官方 API 可控範圍較少，若要自動發文通常需要額外評估外掛或人工審核流程。",
+          difficulty: "高",
+          recommendation: "先採半自動發布",
+          cost: "高"
+        },
+        group: {
+          title: "私人 LINE 群組",
+          desc: "群組自動發文限制較多，建議先用生成器產文，再由管理者複製貼上。",
+          difficulty: "高",
+          recommendation: "人工發布或另評估自動化",
+          cost: "中至高"
+        }
+      }[target];
+
+      $("#lineTargetTitle").textContent = data.title;
+      $("#lineTargetDesc").textContent = data.desc;
+      $("#lineDifficulty").textContent = data.difficulty;
+      $("#lineRecommendation").textContent = data.recommendation;
+      $("#lineCostImpact").textContent = data.cost;
+    }
+
+    function renderCanvas() {
+      const canvas = $("#cardCanvas");
+      const ctx = canvas.getContext("2d");
+      const template = $("#cardTemplate").value;
+      const accent = $("#cardAccent").value;
+      const product = clean($("#productKeyword").value) || "夢幻城堡活動";
+      const style = styleData[state.style];
+      const headline = template === "promo" ? "本週活動推薦" : template === "story" ? "今天，帶孩子進城堡" : "歐樂沃夢幻城堡";
+      const subline = clean($("#productBenefit").value).slice(0, 72) || "親子週末行程、室內景點與拍照體驗一次安排。";
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#fff6fa";
+      ctx.fillRect(60, 60, 960, 960);
+      ctx.fillStyle = accent;
+      ctx.fillRect(60, 60, 18, 960);
+      ctx.fillStyle = template === "promo" ? "#4142E8" : "#4B0717";
+      ctx.fillRect(120, 150, 210, 48);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 28px Microsoft JhengHei, sans-serif";
+      ctx.fillText(style.label + "貼文", 148, 183);
+
+      ctx.fillStyle = "#4B0717";
+      ctx.font = "800 68px Microsoft JhengHei, sans-serif";
+      drawCanvasText(ctx, headline, 120, 300, 820, 82, 2);
+
+      ctx.fillStyle = "#3f3455";
+      ctx.font = "400 36px Microsoft JhengHei, sans-serif";
+      drawCanvasText(ctx, product, 120, 500, 820, 52, 2);
+
+      ctx.fillStyle = "#715966";
+      ctx.font = "400 30px Microsoft JhengHei, sans-serif";
+      drawCanvasText(ctx, subline, 120, 640, 820, 44, 3);
+
+      ctx.fillStyle = "#CC5F83";
+      ctx.font = "800 34px Microsoft JhengHei, sans-serif";
+      ctx.fillText("留言「城堡」索取活動清單", 120, 900);
+    }
+
+    function drawCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+      const chars = Array.from(text);
+      const lines = [];
+      let line = "";
+      chars.forEach((char) => {
+        const test = line + char;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          lines.push(line);
+          line = char;
+        } else {
+          line = test;
+        }
+      });
+      if (line) lines.push(line);
+      lines.slice(0, maxLines).forEach((item, index) => ctx.fillText(item, x, y + index * lineHeight));
+    }
+
+    async function copyPost() {
+      if (!state.currentPost) return;
+      try {
+        await navigator.clipboard.writeText(state.currentPost);
+        showToast("已複製貼文");
+      } catch (error) {
+        fallbackCopy(state.currentPost);
+        showToast("已複製貼文");
+      }
+    }
+
+    function fallbackCopy(text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    }
+
+    function savePost() {
+      const history = loadHistory();
+      history.unshift({
+        id: Date.now(),
+        title: `${formatDate($("#postDate").value)}｜${styleData[state.style].label}`,
+        preview: state.currentPost.slice(0, 78),
+        content: state.currentPost
+      });
+      localStorage.setItem("olivo-line-post-history", JSON.stringify(history.slice(0, 20)));
+      renderHistory();
+      showToast("已存入紀錄");
+    }
+
+    function renderHistory() {
+      const history = loadHistory();
+      const box = $("#historyList");
+      if (!history.length) {
+        box.innerHTML = `<div class="notice">尚無產出紀錄。</div>`;
+        return;
+      }
+      box.innerHTML = history.map((item) => `
+        <button type="button" data-id="${item.id}">
+          <b>${escapeHtml(item.title)}</b>
+          <span>${escapeHtml(item.preview)}...</span>
+        </button>
+      `).join("");
+      box.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const item = history.find((entry) => String(entry.id) === button.dataset.id);
+          if (!item) return;
+          state.currentPost = item.content;
+          $("#linePreview").textContent = item.content;
+          renderMetrics();
+          showToast("已載入紀錄");
+        });
+      });
+    }
+
+    function loadHistory() {
+      try {
+        return JSON.parse(localStorage.getItem("olivo-line-post-history") || "[]");
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function clearHistory() {
+      localStorage.removeItem("olivo-line-post-history");
+      renderHistory();
+      showToast("已清除紀錄");
+    }
+
+    function downloadText() {
+      const blob = new Blob([state.currentPost], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `olivo-line-post-${$("#postDate").value || "today"}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadCard() {
+      const a = document.createElement("a");
+      a.href = $("#cardCanvas").toDataURL("image/png");
+      a.download = `olivo-line-card-${$("#postDate").value || "today"}.png`;
+      a.click();
+    }
+
+    function resetForm() {
+      $("#productKeyword").value = "夢幻城堡門票";
+      $("#productBenefit").value = "室內親子景點、拍照好看、雨天也能玩，適合親子家庭週末安排。";
+      $("#audience").value = "family";
+      $("#postGoal").value = "comment";
+      $("#postTime").value = "12:00";
+      $("#cta").value = "留言「城堡」索取本月活動清單";
+      state.style = "humor";
+      $$("#styleGroup button").forEach((button) => button.classList.toggle("active", button.dataset.style === "humor"));
+      renderAll();
+      showToast("已重設");
+    }
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function clean(value) {
+      return String(value || "").trim().replace(/\s+/g, " ");
+    }
+
+    function toDateInput(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDate(value) {
+      if (!value) return "今天";
+      const date = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return value;
+      const week = "日一二三四五六"[date.getDay()];
+      return `${date.getMonth() + 1}/${date.getDate()}（${week}）`;
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("zh-Hant-TW").format(Math.round(value));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function registerServiceWorker() {
+      if ("serviceWorker" in navigator && location.protocol !== "file:") {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
